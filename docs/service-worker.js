@@ -1,4 +1,5 @@
-const CACHE_NAME = "siteledger-shell-v1";
+const CACHE_NAME = "siteledger-shell-v2";
+const IMAGERY_CACHE_NAME = "siteledger-imagery-v2";
 const APP_ROOT = new URL("./", self.location.href).href;
 
 self.addEventListener("install", (event) => {
@@ -19,7 +20,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== CACHE_NAME)
+            .filter((key) => key !== CACHE_NAME && key !== IMAGERY_CACHE_NAME)
             .map((key) => caches.delete(key)),
         ),
       ),
@@ -31,7 +32,30 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
+  const isSameOrigin = url.origin === self.location.origin;
+  const isImageryTile =
+    url.hostname === "planetarycomputer.microsoft.com" &&
+    url.pathname.includes("/item/tiles/WebMercatorQuad/");
+  if (!isSameOrigin && !isImageryTile) return;
+
+  if (isImageryTile) {
+    event.respondWith(
+      caches.match(request).then(
+        (cached) =>
+          cached ||
+          fetch(request).then((response) => {
+            if (response.ok) {
+              const copy = response.clone();
+              caches
+                .open(IMAGERY_CACHE_NAME)
+                .then((cache) => cache.put(request, copy));
+            }
+            return response;
+          }),
+      ),
+    );
+    return;
+  }
 
   if (request.mode === "navigate") {
     event.respondWith(

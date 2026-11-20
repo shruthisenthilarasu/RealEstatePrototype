@@ -12,6 +12,12 @@ export const environment = Object.freeze({
   parcelServiceUrl:
     import.meta.env.VITE_PARCEL_SERVICE_URL ||
     "https://maps.bexar.org/arcgis/rest/services/Parcels/MapServer/0/query",
+  stacApiUrl:
+    import.meta.env.VITE_STAC_API_URL ||
+    "https://planetarycomputer.microsoft.com/api/stac/v1/search",
+  imageryTileUrl:
+    import.meta.env.VITE_IMAGERY_TILE_URL ||
+    "https://planetarycomputer.microsoft.com/api/data/v1/item/tiles/WebMercatorQuad",
 });
 
 export function hasSupabaseConfiguration() {

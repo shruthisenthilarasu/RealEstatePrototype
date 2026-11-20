@@ -123,6 +123,10 @@
               <span>PARCEL FEED</span
               ><strong id="parcelFeedStatus">ready</strong>
             </div>
+            <div>
+              <span>MEMORY CAPTURES</span
+              ><strong id="imageryCaptureCount">—</strong>
+            </div>
           </section>
         </aside>
 
@@ -193,6 +197,66 @@
             </div>
             <div id="parcelFacts" class="parcel-facts">
               <div><span>Parcel match</span><strong>Loading…</strong></div>
+            </div>
+          </section>
+
+          <section class="imagery-memory-block">
+            <div class="section-heading">
+              <span>Visual site memory</span
+              ><span>Planetary Computer / NAIP</span>
+            </div>
+            <p id="imageryStatus" class="imagery-status" aria-live="polite">
+              Searching historical captures…
+            </p>
+            <div id="imageryCompare" class="imagery-compare-panel" hidden>
+              <div class="imagery-compare">
+                <img
+                  id="imageryBefore"
+                  crossorigin="anonymous"
+                  alt="Earlier aerial capture of the selected property"
+                />
+                <img
+                  id="imageryAfter"
+                  class="imagery-after"
+                  crossorigin="anonymous"
+                  alt="Later aerial capture of the selected property"
+                />
+                <i id="imageryDivider" class="imagery-divider"></i>
+                <span id="imageryBeforeDate" class="imagery-date before"></span>
+                <span id="imageryAfterDate" class="imagery-date after"></span>
+              </div>
+              <label class="compare-control" for="imagerySlider">
+                <span>Earlier</span>
+                <input
+                  id="imagerySlider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="50"
+                  aria-label="Reveal earlier and later aerial imagery"
+                />
+                <span>Later</span>
+              </label>
+              <div class="visual-metrics">
+                <div>
+                  <span>PIXEL DELTA</span><strong id="visualDelta">—</strong>
+                </div>
+                <div>
+                  <span>CHANGED PIXELS</span
+                  ><strong id="changedPixels">—</strong>
+                </div>
+                <div>
+                  <span>REVIEW QUEUE</span><strong id="visualReview">—</strong>
+                </div>
+              </div>
+              <div class="capture-selector">
+                <span>Compare baseline</span>
+                <div id="imageryCaptures"></div>
+              </div>
+              <p class="imagery-caveat">
+                Experimental pixel comparison. Seasonal color, shadows and
+                source alignment can create false change signals.
+              </p>
             </div>
           </section>
 

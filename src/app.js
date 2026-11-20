@@ -3,6 +3,11 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { environment } from "./config/environment.js";
 import { ledgerDates } from "./data/local-properties.js";
+import { createPlanetaryImageryProvider } from "./imagery/planetary-imagery-provider.js";
+import {
+  calculateVisualDelta,
+  visualChangeBand,
+} from "./imagery/visual-change.js";
 import {
   EMPTY_FEATURE_COLLECTION,
   createBexarParcelProvider,
@@ -18,6 +23,7 @@ import {
 
 const repository = createPropertyRepository();
 const parcelProvider = createBexarParcelProvider();
+const imageryProvider = createPlanetaryImageryProvider();
 let properties = [];
 let selected = null;
 let currentView = "observed";
@@ -25,6 +31,9 @@ let activeQuery = "";
 let playTimer = null;
 let parcelRequestController = null;
 let contextRequestController = null;
+let imageryRequestController = null;
+let imageryLoadToken = 0;
+let imageryComparisonToken = 0;
 
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
@@ -272,6 +281,137 @@ function renderParcelContext(feature) {
   );
 }
 
+function waitForImage(image, url) {
+  return new Promise((resolve, reject) => {
+    image.onload = () => resolve(image);
+    image.onerror = () =>
+      reject(new Error("Historical image could not be loaded."));
+    image.src = url;
+  });
+}
+
+function compareLoadedImages(beforeImage, afterImage) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 112;
+  canvas.height = 84;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  context.drawImage(beforeImage, 0, 0, canvas.width, canvas.height);
+  const beforePixels = context.getImageData(
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  ).data;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(afterImage, 0, 0, canvas.width, canvas.height);
+  const afterPixels = context.getImageData(
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  ).data;
+  return calculateVisualDelta(beforePixels, afterPixels);
+}
+
+function renderVisualMetrics(result) {
+  const band = visualChangeBand(result.deltaPercent);
+  document.getElementById("visualDelta").textContent =
+    `${result.deltaPercent}%`;
+  document.getElementById("changedPixels").textContent =
+    `${result.changedPixelPercent}%`;
+  const review = document.getElementById("visualReview");
+  review.textContent = `${band} review priority`;
+  review.dataset.band = band;
+}
+
+async function renderImageryComparison(scenes, beforeIndex, token) {
+  const comparisonToken = ++imageryComparisonToken;
+  const before = scenes[beforeIndex];
+  const after = scenes.at(-1);
+  const beforeImage = document.getElementById("imageryBefore");
+  const afterImage = document.getElementById("imageryAfter");
+  document.getElementById("imageryBeforeDate").textContent =
+    `${before.year} baseline`;
+  document.getElementById("imageryAfterDate").textContent =
+    `${after.year} latest`;
+  document.getElementById("visualReview").textContent = "comparing pixels…";
+  const loaded = await Promise.all([
+    waitForImage(beforeImage, before.previewUrl),
+    waitForImage(afterImage, after.previewUrl),
+  ]);
+  if (token !== imageryLoadToken || comparisonToken !== imageryComparisonToken)
+    return;
+  renderVisualMetrics(compareLoadedImages(loaded[0], loaded[1]));
+}
+
+function renderCaptureButtons(scenes, token) {
+  const container = document.getElementById("imageryCaptures");
+  container.replaceChildren();
+  scenes.forEach((scene, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = String(scene.year);
+    button.className = index === 0 ? "active" : "";
+    button.disabled = index === scenes.length - 1;
+    button.title = button.disabled
+      ? "Latest comparison image"
+      : "Use as baseline";
+    button.addEventListener("click", () => {
+      container
+        .querySelectorAll("button")
+        .forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+      renderImageryComparison(scenes, index, token).catch(handleImageryError);
+    });
+    container.append(button);
+  });
+}
+
+function handleImageryError(error) {
+  console.warn("Visual memory comparison unavailable.", error);
+  document.getElementById("imageryStatus").textContent =
+    "Historical imagery is temporarily unavailable.";
+  document.getElementById("imageryCompare").hidden = true;
+}
+
+async function loadImageryMemory(property) {
+  imageryRequestController?.abort();
+  imageryRequestController = new AbortController();
+  const token = ++imageryLoadToken;
+  const status = document.getElementById("imageryStatus");
+  status.textContent = "Searching the site’s historical imagery memory…";
+  document.getElementById("imageryCompare").hidden = true;
+  document.getElementById("imageryCaptures").replaceChildren();
+  try {
+    const scenes = await imageryProvider.searchHistory(
+      property.lng,
+      property.lat,
+      {
+        signal: imageryRequestController.signal,
+      },
+    );
+    if (token !== imageryLoadToken) return;
+    document.getElementById("imageryCaptureCount").textContent = scenes.length;
+    if (scenes.length < 2) {
+      status.textContent = scenes.length
+        ? "Only one comparable NAIP capture was found."
+        : "No NAIP history was found for this location.";
+      return;
+    }
+    const resolutions = [
+      ...new Set(scenes.map((scene) => scene.resolutionMeters)),
+    ];
+    status.textContent = `${scenes.length} aligned captures · ${resolutions.join(" / ")} m NAIP`;
+    document.getElementById("imageryCompare").hidden = false;
+    renderCaptureButtons(scenes, token);
+    await renderImageryComparison(scenes, 0, token);
+  } catch (error) {
+    if (error.name === "AbortError") return;
+    document.getElementById("imageryCaptureCount").textContent = "—";
+    handleImageryError(error);
+  }
+}
+
 async function loadParcelContext(property) {
   contextRequestController?.abort();
   contextRequestController = new AbortController();
@@ -329,6 +469,7 @@ function selectProperty(property, { focus = false } = {}) {
     .join("");
   document.getElementById("similarityPanel").hidden = true;
   loadParcelContext(property);
+  loadImageryMemory(property);
   if (focus) {
     map.flyTo({
       center: [property.lng, property.lat],
@@ -425,6 +566,12 @@ document
 document
   .getElementById("parcelLayerToggle")
   .addEventListener("change", refreshParcelLayer);
+document.getElementById("imagerySlider").addEventListener("input", (event) => {
+  const position = Number(event.target.value);
+  document.getElementById("imageryAfter").style.clipPath =
+    `inset(0 0 0 ${position}%)`;
+  document.getElementById("imageryDivider").style.left = `${position}%`;
+});
 
 document.getElementById("searchForm").addEventListener("submit", (event) => {
   event.preventDefault();

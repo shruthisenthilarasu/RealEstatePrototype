@@ -34,9 +34,18 @@ The map uses real WGS84 coordinates and keeps external context separate from Sit
 
 - [Esri World Imagery](https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer) supplies the attributed satellite basemap.
 - [Bexar County GIS Parcels](https://maps.bexar.org/arcgis/rest/services/Parcels/MapServer) supplies viewport polygons and selected-site facts such as parcel ID, situs, acreage, assessed value, year built, and use code. Owner data is intentionally not requested.
-- `VITE_SATELLITE_TILE_URL` and `VITE_PARCEL_SERVICE_URL` can replace either provider without changing the map application.
+- [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/docs/) supplies anonymously searchable USDA NAIP history through its public STAC API. Every vintage is rendered from the same Web Mercator map tile for geographic alignment.
+- `VITE_SATELLITE_TILE_URL`, `VITE_PARCEL_SERVICE_URL`, `VITE_STAC_API_URL`, and `VITE_IMAGERY_TILE_URL` can replace providers without changing the map application.
 
 The county service describes the parcel layer as an annual BCAD-derived snapshot and currently reports an older source date. It is displayed as dated context, not current legal truth. Provider endpoints, attribution, verification dates, and future append-only property snapshots are modeled in the database so later ingestion can preserve what the system knew at each point in time.
+
+## Visual site memory
+
+Selecting a tracked property searches historical NAIP captures, renders the earliest and latest images over one shared map footprint, and provides a swipe comparison. A lightweight browser vision pass calculates mean RGB delta and the fraction of materially changed pixels to prioritize human review. This is deliberately labeled as an experimental heuristic: seasons, shadows, sensor differences, and residual source alignment can all create false positives.
+
+The database models the production path separately: immutable imagery assets, queued vision jobs, append-only comparisons, model versions, evidence payloads, and append-only human reviews. The next AI layer can add building, parking, drive-through, grading, signage, and impervious-cover detections without replacing the original imagery evidence or earlier model outputs.
+
+NAIP is high-resolution rather than high-frequency imagery; USGS describes a generally multi-year acquisition cycle. Sentinel-2 or a commercial provider can later fill the monitoring-frequency gap while NAIP remains the higher-resolution ground-truth checkpoint.
 
 ## Spatial database
 

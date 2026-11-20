@@ -54,6 +54,18 @@ values
     '2026-11-19T00:00:00Z',
     'Esri, Maxar, Earthstar Geographics, and the GIS User Community',
     '{"coordinate_system":"Web Mercator","role":"visual context only"}'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000213',
+    '00000000-0000-4000-8000-000000000001',
+    'planetary-naip',
+    'Microsoft Planetary Computer NAIP archive',
+    'https://planetarycomputer.microsoft.com/api/stac/v1/search',
+    'stac-imagery-catalog',
+    null,
+    '2026-11-19T00:00:00Z',
+    'USDA NAIP via Microsoft Planetary Computer',
+    '{"collection":"naip","resolution_m":0.6,"role":"historical visual memory","refresh_note":"NAIP generally follows a multi-year acquisition cycle."}'
   )
 on conflict (org_id, provider_key) do update set
   label = excluded.label,
