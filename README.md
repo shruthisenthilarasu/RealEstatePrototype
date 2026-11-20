@@ -26,7 +26,7 @@ npm run dev
 
 Open the URL printed by Vite.
 
-The default `auto` mode uses the bundled eight-property dataset if Supabase is not configured. Copy `.env.example` to `.env.local` and add the project URL and public anonymous key to use the database. Remote results are cached in browser storage and used if the network later becomes unavailable. Production builds also install a same-origin service worker so the application shell and property ledger can reopen offline after the first successful visit; live satellite imagery and parcel queries still require a network connection.
+The default `auto` mode uses the bundled eight-property dataset if Supabase is not configured. Copy `.env.example` to `.env.local` and add the project URL and publishable key to use the database. Remote results are cached in browser storage and used if the network later becomes unavailable. Production builds also install a same-origin service worker so the application shell and property ledger can reopen offline after the first successful visit; live satellite imagery and parcel queries still require a network connection.
 
 ## Geospatial providers
 

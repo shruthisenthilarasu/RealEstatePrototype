@@ -194,7 +194,7 @@ insert into public.observations (
 )
 select
   p.org_id, p.id, '00000000-0000-4000-8000-000000000201',
-  observation_key, 'archive_extraction', label, confidence, payload
+  o.observation_key, 'archive_extraction', o.label, o.confidence, o.payload
 from public.properties p
 cross join lateral (
   values

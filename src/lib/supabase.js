@@ -10,7 +10,7 @@ export function getSupabaseClient() {
   if (!hasSupabaseConfiguration()) return null;
   client ??= createClient(
     environment.supabaseUrl,
-    environment.supabaseAnonKey,
+    environment.supabasePublishableKey,
     {
       auth: { persistSession: true, autoRefreshToken: true },
     },

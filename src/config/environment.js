@@ -5,7 +5,10 @@ export const environment = Object.freeze({
     ? requestedMode
     : "auto",
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL || "",
-  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || "",
+  supabasePublishableKey:
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    "",
   satelliteTileUrl:
     import.meta.env.VITE_SATELLITE_TILE_URL ||
     "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
@@ -21,5 +24,5 @@ export const environment = Object.freeze({
 });
 
 export function hasSupabaseConfiguration() {
-  return Boolean(environment.supabaseUrl && environment.supabaseAnonKey);
+  return Boolean(environment.supabaseUrl && environment.supabasePublishableKey);
 }

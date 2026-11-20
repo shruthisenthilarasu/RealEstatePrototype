@@ -65,4 +65,58 @@ describe("Supabase property memory repository", () => {
       p_limit: 20,
     });
   });
+
+  it("keeps structured numeric evidence in separate detection rows", async () => {
+    const row = {
+      id: "00000000-0000-4000-8000-000000000101",
+      reference_code: "ARCHIVE-2026-QSR-01",
+      name: "1604 / Bandera restaurant",
+      address: "11707 TX-1604 Loop, Helotes",
+      city: "Helotes",
+      state: "TX",
+      latitude: 29.553007,
+      longitude: -98.669472,
+      zoning_code: "C-3",
+      legal_state: "C-3 stated in source flyer",
+      recorded_state: "For-sale flyer in 2026/QSR",
+      confidence: 0.98,
+      tags: ["drive", "reuse", "traffic", "zoning"],
+      status: "opportunity",
+      observed_state: "Freestanding restaurant with drive-through",
+      image_label: "Source: 2026 archive PDF",
+    };
+    const client = {
+      rpc: async () => ({ data: [row], error: null }),
+      from: (table) => ({
+        select: () => ({
+          in: async () => ({
+            data:
+              table === "observations"
+                ? [
+                    {
+                      property_id: row.id,
+                      label: "4465",
+                      confidence: 0.98,
+                      payload: {
+                        building_sf: 4465,
+                        land_acres: 1.21,
+                        traffic_vpd: 142543,
+                      },
+                    },
+                  ]
+                : [],
+            error: null,
+          }),
+        }),
+      }),
+    };
+    const repository = createSupabasePropertyRepository(client);
+    const [property] = await repository.listPropertiesInBounds();
+
+    expect(property.detections).toEqual([
+      ["building sf: 4465", 98],
+      ["land acres: 1.21", 98],
+      ["traffic vpd: 142543", 98],
+    ]);
+  });
 });

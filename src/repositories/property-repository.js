@@ -87,10 +87,7 @@ function toUiProperty(row, events, observations) {
     .map((event) => [event.display_date, event.title]);
   const detections = observations
     .filter((observation) => observation.property_id === row.id)
-    .map((observation) => [
-      observation.label,
-      Math.round(Number(observation.confidence) * 100),
-    ]);
+    .flatMap(observationDetections);
 
   return {
     id: row.reference_code,
@@ -111,6 +108,22 @@ function toUiProperty(row, events, observations) {
     detections,
     events: propertyEvents,
   };
+}
+
+function observationDetections(observation) {
+  const confidence = Math.round(Number(observation.confidence) * 100);
+  const entries = Object.entries(observation.payload || {});
+  if (!entries.length) return [[observation.label, confidence]];
+  return entries.map(([key, value]) => {
+    const label = key.replaceAll("_", " ");
+    if (Array.isArray(value)) {
+      return [`${label}: ${value.join(", ")}`, confidence];
+    }
+    if (value && typeof value === "object") {
+      return [`${label}: ${Object.values(value).join(", ")}`, confidence];
+    }
+    return [`${label}: ${value}`, confidence];
+  });
 }
 
 export function createSupabasePropertyRepository(client) {
@@ -138,7 +151,7 @@ export function createSupabasePropertyRepository(client) {
           .in("property_id", ids),
         client
           .from("observations")
-          .select("property_id,label,confidence")
+          .select("property_id,label,confidence,payload")
           .in("property_id", ids),
       ]);
       if (eventResult.error) throw eventResult.error;
@@ -181,7 +194,7 @@ export function createPropertyRepository() {
   if (!client || !hasSupabaseConfiguration()) {
     if (environment.dataMode === "supabase") {
       throw new Error(
-        "Supabase mode requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
+        "Supabase mode requires VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.",
       );
     }
     return local;
