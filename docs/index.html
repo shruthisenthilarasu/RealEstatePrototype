@@ -8,15 +8,8 @@
       content="SiteLedger CRE property intelligence prototype for continuous site, zoning, and market memory."
     />
     <title>SiteLedger CRE</title>
-    <link rel="preconnect" href="https://unpkg.com" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIINfQ3ynhxc9WgqSrKhmZp8QF/4ZMQM/Q="
-      crossorigin=""
-    />
-    <script type="module" crossorigin src="./assets/index-BNh0GWr_.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CbSqzHuA.css">
+    <script type="module" crossorigin src="./assets/index-BAMDeX1K.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CsDUXyNm.css">
   </head>
   <body>
     <main class="app-shell">
@@ -39,7 +32,9 @@
           />
           <button type="submit">Search portfolio</button>
         </form>
-        <div class="live-chip"><span></span> 8 parcels monitored</div>
+        <div class="live-chip">
+          <span></span> <b id="parcelCount">Loading ledger…</b>
+        </div>
       </header>
 
       <section class="workspace">
@@ -104,7 +99,12 @@
           <section class="model-status">
             <div><span>ARCHIVE INGEST</span><strong>2025.zip</strong></div>
             <div><span>SOURCE FILES</span><strong>250</strong></div>
-            <div><span>ACTIVE SITES</span><strong>8</strong></div>
+            <div>
+              <span>DATA MODE</span><strong id="dataMode">loading</strong>
+            </div>
+            <div>
+              <span>ACTIVE SITES</span><strong id="activeSiteCount">—</strong>
+            </div>
           </section>
         </aside>
 
@@ -201,10 +201,5 @@
       </section>
     </main>
 
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
   </body>
 </html>

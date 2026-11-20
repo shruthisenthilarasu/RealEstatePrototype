@@ -1,0 +1,189 @@
+insert into public.organizations (id, name, slug, is_public_demo)
+values (
+  '00000000-0000-4000-8000-000000000001',
+  'SiteLedger San Antonio Demo',
+  'siteledger-san-antonio-demo',
+  true
+)
+on conflict (id) do update set
+  name = excluded.name,
+  slug = excluded.slug,
+  is_public_demo = excluded.is_public_demo;
+
+insert into public.sources (
+  id, org_id, source_key, title, source_type, captured_at, metadata
+)
+values (
+  '00000000-0000-4000-8000-000000000201',
+  '00000000-0000-4000-8000-000000000001',
+  'archive-2025-zip',
+  'Supplied San Antonio property archive',
+  'marketing_archive',
+  '2026-11-18T00:00:00Z',
+  '{"filename":"2025.zip","note":"Facts require source and professional verification."}'
+)
+on conflict (org_id, source_key) do update set
+  title = excluded.title,
+  metadata = excluded.metadata;
+
+insert into public.properties (
+  id, org_id, reference_code, name, address, city, state, status,
+  observed_state, legal_state, recorded_state, zoning_code, confidence,
+  tags, centroid, image_label, metadata
+)
+values
+  (
+    '00000000-0000-4000-8000-000000000101', '00000000-0000-4000-8000-000000000001',
+    'ARCHIVE-2026-QSR-01', '1604 / Bandera restaurant', '11707 TX-1604 Loop, Helotes',
+    'Helotes', 'TX', 'opportunity', 'Freestanding restaurant with drive-through',
+    'C-3 stated in source flyer', 'For-sale flyer in 2026/QSR', 'C-3', 0.98,
+    array['drive','reuse','traffic','zoning'],
+    extensions.st_setsrid(extensions.st_makepoint(-98.6900, 29.5710), 4326)::extensions.geography,
+    'Source: 2026 archive PDF', '{"building_sf":4465,"land_acres":1.21,"traffic_vpd":142543}'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000000001',
+    'ARCHIVE-2025-INGRAM', 'Former Sonic pad', '6111 Ingram Rd, San Antonio',
+    'San Antonio', 'TX', 'opportunity', 'Former Sonic pad marketed for ground lease',
+    'Zoning not stated in archive source', 'Ground-lease flyer in 2025 folder', null, 0.97,
+    array['drive','reuse','traffic'],
+    extensions.st_setsrid(extensions.st_makepoint(-98.6122, 29.4605), 4326)::extensions.geography,
+    'Source: 2025 archive PDF', '{"land_acres":0.592,"traffic_vpd":{"ingram":19946,"callaghan":13945}}'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000103', '00000000-0000-4000-8000-000000000001',
+    'ARCHIVE-2025-WURZBACH', 'Loop 410 pad site', '5630 Wurzbach Rd, Leon Valley',
+    'Leon Valley', 'TX', 'opportunity', 'Former Sonic pad adjacent to Bill Miller',
+    'Zoning not stated in archive source', 'Ground-lease flyer in 2025 folder', null, 0.97,
+    array['drive','reuse','traffic'],
+    extensions.st_setsrid(extensions.st_makepoint(-98.5961, 29.5039), 4326)::extensions.geography,
+    'Source: 2025 archive PDF', '{"land_acres":0.83,"traffic_vpd":{"loop_410":220688,"bandera":83734}}'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000104', '00000000-0000-4000-8000-000000000001',
+    'ARCHIVE-2026-WALZEM', 'Operating second-gen QSR', '5050 Walzem Rd, Windcrest',
+    'Windcrest', 'TX', 'stable', '2nd-generation QSR; tenant operating',
+    'Zoning not stated in archive source', 'Lease flyer in 2026/QSR', null, 0.98,
+    array['drive','reuse','traffic'],
+    extensions.st_setsrid(extensions.st_makepoint(-98.3908, 29.5095), 4326)::extensions.geography,
+    'Source: 2026 archive PDF', '{"building_sf":2834,"traffic_vpd":34246}'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000105', '00000000-0000-4000-8000-000000000001',
+    'ARCHIVE-2026-BABCOCK', 'Babcock outparcel', '1602 Babcock Rd, San Antonio',
+    'San Antonio', 'TX', 'changed', '0.25–0.5 acre outparcel anchored by Gold’s Gym',
+    'Zoning not stated in archive source', 'Ground-lease flyer in 2026/Land', null, 0.97,
+    array['reuse','traffic'],
+    extensions.st_setsrid(extensions.st_makepoint(-98.5710, 29.4930), 4326)::extensions.geography,
+    'Source: 2026 archive PDF', '{"land_acres_min":0.25,"land_acres_max":0.5,"traffic_vpd":{"loop_410":166684,"babcock":44683}}'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000106', '00000000-0000-4000-8000-000000000001',
+    'ARCHIVE-2025-BROADWAY', 'Broadway retail redevelopment', '2000 Broadway, San Antonio',
+    'San Antonio', 'TX', 'changed', 'High-profile retail redevelopment by the Pearl',
+    'Zoning not stated in archive source', 'Redevelopment flyer in 2025 folder', null, 0.98,
+    array['reuse','traffic'],
+    extensions.st_setsrid(extensions.st_makepoint(-98.4760, 29.4455), 4326)::extensions.geography,
+    'Source: 2025 archive PDF', '{"building_sf":10564,"traffic_vpd":{"broadway":21702,"josephine":4000}}'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000107', '00000000-0000-4000-8000-000000000001',
+    'ARCHIVE-2025-CULEBRA', 'Culebra / Blacktail Lot 3', 'Culebra Rd at Blacktail Crossing, San Antonio',
+    'San Antonio', 'TX', 'construction', 'Proposed 5,230 SF commercial drive-through',
+    'Zoning not stated on supplied site plan', 'Site plan dated March 17, 2025', null, 0.99,
+    array['drive','reuse'],
+    extensions.st_setsrid(extensions.st_makepoint(-98.6514, 29.4774), 4326)::extensions.geography,
+    'Source: 2025 site-plan PDF', '{"building_sf":5230,"land_acres":1.05,"parking_required":34,"parking_provided":36,"queue_vehicles":15}'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000108', '00000000-0000-4000-8000-000000000001',
+    'ARCHIVE-2025-IH10', 'IH-10 / Loop 1604 commercial sites', 'SE corner IH-10 and Loop 1604, San Antonio',
+    'San Antonio', 'TX', 'changed', 'Four commercial sites with utilities stated',
+    'C-3 stated in archive filename', 'Land offering in 2025 folder', 'C-3', 0.96,
+    array['traffic','zoning'],
+    extensions.st_setsrid(extensions.st_makepoint(-98.6000, 29.5930), 4326)::extensions.geography,
+    'Source: 2025 archive PDF', '{"tract_acres":[5.69,14,4.2,2.87]}'
+  )
+on conflict (org_id, reference_code) do update set
+  name = excluded.name,
+  address = excluded.address,
+  status = excluded.status,
+  observed_state = excluded.observed_state,
+  legal_state = excluded.legal_state,
+  recorded_state = excluded.recorded_state,
+  zoning_code = excluded.zoning_code,
+  confidence = excluded.confidence,
+  tags = excluded.tags,
+  centroid = excluded.centroid,
+  image_label = excluded.image_label,
+  metadata = excluded.metadata;
+
+insert into public.parcels (org_id, parcel_number, boundary, centroid, metadata)
+select
+  p.org_id,
+  p.reference_code || '-PARCEL',
+  extensions.st_buffer(p.centroid, 55)::extensions.geometry,
+  p.centroid,
+  jsonb_build_object('seed_geometry', true)
+from public.properties p
+where p.org_id = '00000000-0000-4000-8000-000000000001'
+on conflict (org_id, parcel_number) do update set
+  boundary = excluded.boundary,
+  centroid = excluded.centroid;
+
+insert into public.property_parcels (org_id, property_id, parcel_id, is_primary)
+select p.org_id, p.id, parcel.id, true
+from public.properties p
+join public.parcels parcel
+  on parcel.org_id = p.org_id and parcel.parcel_number = p.reference_code || '-PARCEL'
+where p.org_id = '00000000-0000-4000-8000-000000000001'
+on conflict (property_id, parcel_id) do update set is_primary = true;
+
+insert into public.observations (
+  org_id, property_id, source_id, observation_key, observation_type,
+  label, confidence, payload
+)
+select
+  p.org_id, p.id, '00000000-0000-4000-8000-000000000201',
+  observation_key, 'archive_extraction', label, confidence, payload
+from public.properties p
+cross join lateral (
+  values
+    ('primary-form', p.observed_state, p.confidence, '{}'::jsonb),
+    ('archive-facts', coalesce(p.metadata->>'building_sf', p.metadata->>'land_acres', 'See source metadata'), p.confidence, p.metadata)
+) as o(observation_key, label, confidence, payload)
+where p.org_id = '00000000-0000-4000-8000-000000000001'
+on conflict (property_id, observation_key) do update set
+  label = excluded.label,
+  confidence = excluded.confidence,
+  payload = excluded.payload;
+
+insert into public.property_events (
+  org_id, property_id, source_id, event_key, event_type, title,
+  display_date, valid_at, confidence
+)
+select
+  p.org_id, p.id, '00000000-0000-4000-8000-000000000201',
+  'archive-recorded', 'archive', p.recorded_state,
+  case when p.reference_code like 'ARCHIVE-2026%' then '2026' else '2025' end,
+  case when p.reference_code like 'ARCHIVE-2026%' then '2026-01-01'::timestamptz else '2025-01-01'::timestamptz end,
+  p.confidence
+from public.properties p
+where p.org_id = '00000000-0000-4000-8000-000000000001'
+on conflict (property_id, event_key) do update set
+  title = excluded.title,
+  display_date = excluded.display_date,
+  valid_at = excluded.valid_at;
+
+insert into public.property_events (
+  org_id, property_id, source_id, event_key, event_type, title,
+  display_date, valid_at, confidence
+)
+select
+  p.org_id, p.id, '00000000-0000-4000-8000-000000000201',
+  'future-monitoring', 'monitoring_plan',
+  'Continuous imagery, permit and record signals become linked ledger events',
+  'FUTURE', null, 0.90
+from public.properties p
+where p.org_id = '00000000-0000-4000-8000-000000000001'
+on conflict (property_id, event_key) do update set title = excluded.title;

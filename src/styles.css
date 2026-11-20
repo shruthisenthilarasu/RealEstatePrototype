@@ -157,6 +157,9 @@ button {
   box-shadow: 0 0 12px var(--teal);
   margin-right: 7px;
 }
+.live-chip b {
+  font-weight: 400;
+}
 
 .workspace {
   display: grid;
