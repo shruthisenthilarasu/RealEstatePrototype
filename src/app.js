@@ -20,6 +20,10 @@ import {
   SAN_ANTONIO_BOUNDS,
   createPropertyRepository,
 } from "./repositories/property-repository.js";
+import {
+  findSimilarProperties,
+  searchPropertyMemory,
+} from "./search/property-memory-search.js";
 
 const repository = createPropertyRepository();
 const parcelProvider = createBexarParcelProvider();
@@ -28,12 +32,14 @@ let properties = [];
 let selected = null;
 let currentView = "observed";
 let activeQuery = "";
+let activeSearchResultIds = null;
 let playTimer = null;
 let parcelRequestController = null;
 let contextRequestController = null;
 let imageryRequestController = null;
 let imageryLoadToken = 0;
 let imageryComparisonToken = 0;
+let memorySearchToken = 0;
 
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
@@ -170,35 +176,9 @@ function layerMatches(property) {
   const layerOk =
     property.tags.length === 0 ||
     property.tags.some((tag) => enabled.includes(tag));
-  if (!activeQuery) return layerOk;
-  const haystack = [
-    property.name,
-    property.address,
-    property.zone,
-    property.legal,
-    property.recorded,
-    property.observed,
-    ...property.tags,
-    ...property.detections.flat(),
-  ]
-    .join(" ")
-    .toLowerCase();
-  const terms = activeQuery
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(
-      (term) =>
-        term.length > 2 &&
-        !["find", "show", "with", "and", "the", "all", "recent"].includes(term),
-    );
   return (
     layerOk &&
-    terms.every(
-      (term) =>
-        haystack.includes(term) ||
-        (term === "through" && haystack.includes("drive")) ||
-        (term === "pads" && haystack.includes("pad")),
-    )
+    (!activeSearchResultIds || activeSearchResultIds.has(property.id))
   );
 }
 
@@ -468,6 +448,12 @@ function selectProperty(property, { focus = false } = {}) {
     )
     .join("");
   document.getElementById("similarityPanel").hidden = true;
+  document.querySelectorAll(".memory-result").forEach((result) => {
+    result.classList.toggle(
+      "active",
+      result.dataset.propertyId === property.id,
+    );
+  });
   loadParcelContext(property);
   loadImageryMemory(property);
   if (focus) {
@@ -479,15 +465,129 @@ function selectProperty(property, { focus = false } = {}) {
   }
 }
 
-function runQuery(query) {
+function renderMemorySearch(search, source = "local") {
+  const panel = document.getElementById("memorySearchPanel");
+  const resultsContainer = document.getElementById("memorySearchResults");
+  panel.hidden = false;
+  document.getElementById("memorySearchCount").textContent =
+    `${search.results.length} ranked match${search.results.length === 1 ? "" : "es"}`;
+  const interpretation = search.intent.labels.length
+    ? `Interpreted as ${search.intent.labels.join(" · ")}`
+    : "Ranked across archive language, property form and ledger evidence";
+  document.getElementById("memorySearchIntent").textContent =
+    source === "supabase"
+      ? `${interpretation} · server hybrid ranking`
+      : interpretation;
+  resultsContainer.replaceChildren();
+  if (!search.results.length) {
+    const empty = document.createElement("p");
+    empty.className = "memory-search-empty";
+    empty.textContent =
+      "No property memory satisfies those constraints. Try removing a zoning or numeric requirement.";
+    resultsContainer.append(empty);
+    return;
+  }
+  search.results.slice(0, 5).forEach((result, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `memory-result${index === 0 ? " active" : ""}`;
+    button.dataset.propertyId = result.property.id;
+    button.setAttribute(
+      "aria-label",
+      `Open ${result.property.name}, ${result.score}% memory match`,
+    );
+    const heading = document.createElement("span");
+    heading.className = "memory-result-heading";
+    const name = document.createElement("b");
+    name.textContent = result.property.name;
+    const score = document.createElement("strong");
+    score.textContent = `${result.score}%`;
+    heading.append(name, score);
+    const address = document.createElement("small");
+    address.textContent = result.property.address;
+    const reasons = document.createElement("span");
+    reasons.className = "memory-reasons";
+    (result.reasons.length ? result.reasons : ["archive evidence"]).forEach(
+      (reason) => {
+        const badge = document.createElement("i");
+        badge.textContent = reason;
+        reasons.append(badge);
+      },
+    );
+    const evidence = document.createElement("span");
+    evidence.className = "memory-evidence";
+    evidence.textContent =
+      result.evidence[0]?.label || result.property.observed;
+    button.append(heading, address, reasons, evidence);
+    button.addEventListener("click", () =>
+      selectProperty(result.property, { focus: true }),
+    );
+    resultsContainer.append(button);
+  });
+}
+
+function mergeRemoteMemorySearch(localSearch, rows) {
+  const localById = new Map(
+    localSearch.results.map((result) => [result.property.id, result]),
+  );
+  const results = rows
+    .map((row) => {
+      const local = localById.get(row.reference_code);
+      if (!local) return null;
+      const remoteEvidence = Array.isArray(row.evidence)
+        ? row.evidence.map((item) => ({
+            type: item.type || "memory",
+            label: item.title || item.content || "Property memory evidence",
+            source: item.valid_at || "Property Memory Graph",
+          }))
+        : [];
+      return {
+        ...local,
+        evidence: remoteEvidence.length ? remoteEvidence : local.evidence,
+      };
+    })
+    .filter(Boolean);
+  return results.length ? { ...localSearch, results } : localSearch;
+}
+
+async function runQuery(query) {
+  const searchToken = ++memorySearchToken;
   activeQuery = query.trim();
   document.getElementById("query").value = activeQuery;
+  const search = searchPropertyMemory(properties, activeQuery);
+  activeSearchResultIds = activeQuery
+    ? new Set(search.results.map((result) => result.property.id))
+    : null;
   stylePropertyLayers();
-  const matches = properties.filter(layerMatches);
+  const matches = search.results.map((result) => result.property);
   document.getElementById("queryResult").textContent = activeQuery
-    ? `${matches.length} matches for “${activeQuery}”`
+    ? `${matches.length} memory match${matches.length === 1 ? "" : "es"} for “${activeQuery}”`
     : `Showing ${properties.length} source-linked sites · ${repository.mode}`;
+  document.getElementById("memorySearchPanel").hidden = !activeQuery;
+  if (activeQuery) renderMemorySearch(search);
   if (matches.length) selectProperty(matches[0], { focus: true });
+  if (!activeQuery) return;
+  try {
+    const remoteRows = await repository.searchPropertyMemory(
+      SAN_ANTONIO_BOUNDS,
+      activeQuery,
+    );
+    if (searchToken !== memorySearchToken || !remoteRows?.length) return;
+    const remoteSearch = mergeRemoteMemorySearch(search, remoteRows);
+    activeSearchResultIds = new Set(
+      remoteSearch.results.map((result) => result.property.id),
+    );
+    stylePropertyLayers();
+    renderMemorySearch(remoteSearch, "supabase");
+    if (remoteSearch.results.length) {
+      selectProperty(remoteSearch.results[0].property, { focus: true });
+    }
+  } catch (error) {
+    console.warn(
+      "Server memory ranking unavailable; local results remain.",
+      error,
+    );
+  }
 }
 
 function parcelPopupContent(feature) {
@@ -577,6 +677,9 @@ document.getElementById("searchForm").addEventListener("submit", (event) => {
   event.preventDefault();
   runQuery(document.getElementById("query").value);
 });
+document.getElementById("closeMemorySearch").addEventListener("click", () => {
+  document.getElementById("memorySearchPanel").hidden = true;
+});
 document
   .querySelectorAll("[data-query]")
   .forEach((button) =>
@@ -611,26 +714,11 @@ document.getElementById("similarButton").addEventListener("click", () => {
   if (!selected) return;
   const panel = document.getElementById("similarityPanel");
   panel.hidden = false;
-  const candidates = properties
-    .filter((property) => property.id !== selected.id)
-    .map((property) => {
-      const shared = property.tags.filter((tag) =>
-        selected.tags.includes(tag),
-      ).length;
-      return {
-        property,
-        score: Math.min(
-          96,
-          64 + shared * 9 + (property.zone === selected.zone ? 8 : 0),
-        ),
-      };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+  const candidates = findSimilarProperties(properties, selected);
   document.getElementById("similarityList").innerHTML = candidates
     .map(
-      ({ property, score }) =>
-        `<div class="similar-result"><span>${property.name}<br><small>${property.address}</small></span><strong>${score}%</strong></div>`,
+      ({ property, score, reasons }) =>
+        `<div class="similar-result"><span>${property.name}<br><small>${property.address}</small><em>${reasons.join(" · ")}</em></span><strong>${score}%</strong></div>`,
     )
     .join("");
 });
@@ -647,6 +735,11 @@ async function bootstrap() {
     `${properties.length} sites monitored`;
   document.getElementById("dataMode").textContent = repository.mode;
   document.getElementById("activeSiteCount").textContent = properties.length;
+  document.getElementById("memoryIndexCount").textContent = properties.reduce(
+    (count, property) =>
+      count + property.detections.length + property.events.length + 1,
+    0,
+  );
   document.getElementById("queryResult").textContent =
     `Showing ${properties.length} source-linked sites · ${repository.mode}`;
   document.getElementById("parcelSourceDate").textContent =

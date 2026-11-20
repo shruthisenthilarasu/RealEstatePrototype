@@ -74,6 +74,9 @@ export function createLocalPropertyRepository(properties = localProperties) {
           matchesQuery(property, query),
       );
     },
+    async searchPropertyMemory() {
+      return null;
+    },
   };
 }
 
@@ -151,6 +154,23 @@ export function createSupabasePropertyRepository(client) {
         ),
       );
     },
+    async searchPropertyMemory(
+      bounds = SAN_ANTONIO_BOUNDS,
+      query = "",
+      { limit = 20 } = {},
+    ) {
+      const { data, error } = await client.rpc("search_property_memory", {
+        p_query: query,
+        p_west: bounds.west,
+        p_south: bounds.south,
+        p_east: bounds.east,
+        p_north: bounds.north,
+        p_query_embedding: null,
+        p_limit: limit,
+      });
+      if (error) throw error;
+      return data || [];
+    },
   };
 }
 
@@ -185,6 +205,18 @@ export function createPropertyRepository() {
         this.mode = cached ? "cached-fallback" : "offline-fallback";
         if (cached) return cached;
         return local.listPropertiesInBounds(bounds, query);
+      }
+    },
+    async searchPropertyMemory(bounds, query, options) {
+      try {
+        return await remote.searchPropertyMemory(bounds, query, options);
+      } catch (error) {
+        if (environment.dataMode === "supabase") throw error;
+        console.warn(
+          "Supabase memory search unavailable; keeping local ranking.",
+          error,
+        );
+        return null;
       }
     },
   };

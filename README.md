@@ -47,6 +47,12 @@ The database models the production path separately: immutable imagery assets, qu
 
 NAIP is high-resolution rather than high-frequency imagery; USGS describes a generally multi-year acquisition cycle. Sentinel-2 or a commercial provider can later fill the monitoring-frequency gap while NAIP remains the higher-resolution ground-truth checkpoint.
 
+## Property Memory Graph
+
+Portfolio search uses a real-estate intent layer rather than requiring literal keyword matches. It recognizes concepts such as drive-through form, reuse, ground leases, traffic exposure, development activity, operating tenants, recent change, zoning codes, minimum acreage, and minimum VPD. Results are ranked with the supporting archive, legal, observed, and ledger evidence visible beside each score. The bundled ranker runs entirely in the browser, so search continues to work against the cached property ledger while offline.
+
+The production schema stores source-linked property memory items with dates, confidence, evidence payloads, full-text vectors, and optional 1,536-dimension embeddings. `search_property_memory` combines spatial bounds, PostgreSQL full-text relevance, optional pgvector similarity, confidence, and freshness while returning the top evidence records for every property match. Embeddings are optional so retrieval remains usable before an AI provider is configured.
+
 ## Spatial database
 
 The `supabase/` directory contains ordered migrations and an idempotent seed:
@@ -56,7 +62,7 @@ supabase start
 supabase db reset
 ```
 
-The schema enables PostGIS and pgvector, adds organization-scoped row-level security, and models properties, parcels, sources, observations, append-only events, zoning snapshots, imagery, detected site features, embeddings, watchlists, and annotations. The seed creates the eight sites extracted from the supplied archive and links their evidence to the archive source.
+The schema enables PostGIS and pgvector, adds organization-scoped row-level security, and models properties, parcels, sources, observations, append-only events, zoning snapshots, imagery, detected site features, searchable property memory, embeddings, watchlists, and annotations. The seed creates the eight sites extracted from the supplied archive and links their evidence to the archive source.
 
 The frontend queries `get_properties_in_bounds`, a security-invoker RPC that respects row-level security. The seeded demo organization is publicly readable; writes require an authenticated organization owner or editor. The anonymous key is safe to expose only with these policies in place.
 

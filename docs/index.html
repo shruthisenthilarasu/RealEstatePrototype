@@ -8,8 +8,8 @@
       content="SiteLedger CRE property intelligence prototype for continuous site, zoning, and market memory."
     />
     <title>SiteLedger CRE</title>
-    <script type="module" crossorigin src="./assets/index-laytB1DH.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-RjPIZG3K.css">
+    <script type="module" crossorigin src="./assets/index-ByTPhTzZ.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BdGLwSr8.css">
   </head>
   <body>
     <main class="app-shell">
@@ -128,6 +128,10 @@
               <span>MEMORY CAPTURES</span
               ><strong id="imageryCaptureCount">—</strong>
             </div>
+            <div>
+              <span>MEMORY INDEX</span><strong id="memoryIndexCount">—</strong>
+            </div>
+            <div><span>RETRIEVAL</span><strong>hybrid local</strong></div>
           </section>
         </aside>
 
@@ -140,6 +144,32 @@
           <div id="queryResult" class="query-result" aria-live="polite">
             Showing eight sites extracted from the supplied archive
           </div>
+          <section
+            id="memorySearchPanel"
+            class="memory-search-panel"
+            aria-label="Property memory search results"
+            hidden
+          >
+            <header>
+              <div>
+                <span>PROPERTY MEMORY GRAPH</span>
+                <strong id="memorySearchCount">0 ranked matches</strong>
+              </div>
+              <button
+                id="closeMemorySearch"
+                type="button"
+                aria-label="Close property memory results"
+              >
+                Close
+              </button>
+            </header>
+            <p id="memorySearchIntent"></p>
+            <div id="memorySearchResults"></div>
+            <footer>
+              Ranked from spatial, zoning, archive, site-form and timeline
+              evidence. Select a result to inspect its sources.
+            </footer>
+          </section>
           <div class="legend" aria-label="Map legend">
             <span><i class="swatch opportunity"></i> Reuse opportunity</span>
             <span><i class="swatch changed"></i> Marketed site</span>
@@ -279,7 +309,7 @@
 
           <section id="similarityPanel" class="similarity-panel" hidden>
             <div class="section-heading">
-              <span>Visual similarity</span><span>Form Signature v3</span>
+              <span>Property similarity</span><span>Memory Graph v1</span>
             </div>
             <div id="similarityList"></div>
           </section>

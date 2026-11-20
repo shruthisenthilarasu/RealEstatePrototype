@@ -236,3 +236,82 @@ select
 from public.properties p
 where p.org_id = '00000000-0000-4000-8000-000000000001'
 on conflict (property_id, event_key) do update set title = excluded.title;
+
+insert into public.property_memory_items (
+  org_id, property_id, source_id, memory_key, memory_type, title,
+  content, valid_at, confidence, evidence
+)
+select
+  p.org_id,
+  p.id,
+  '00000000-0000-4000-8000-000000000201',
+  'property-profile',
+  'profile',
+  p.name,
+  concat_ws(
+    '. ', p.address, p.observed_state, p.legal_state, p.recorded_state,
+    array_to_string(p.tags, ' '), p.metadata::text
+  ),
+  p.updated_at,
+  p.confidence,
+  jsonb_build_object(
+    'source_label', p.image_label,
+    'reference_code', p.reference_code,
+    'metadata', p.metadata
+  )
+from public.properties p
+where p.org_id = '00000000-0000-4000-8000-000000000001'
+on conflict (property_id, memory_key) do update set
+  title = excluded.title,
+  content = excluded.content,
+  valid_at = excluded.valid_at,
+  confidence = excluded.confidence,
+  evidence = excluded.evidence;
+
+insert into public.property_memory_items (
+  org_id, property_id, source_id, memory_key, memory_type, title,
+  content, valid_at, confidence, evidence
+)
+select
+  e.org_id,
+  e.property_id,
+  e.source_id,
+  'event:' || e.event_key,
+  'event',
+  e.title,
+  concat_ws(' ', e.event_type, e.display_date, e.title),
+  e.valid_at,
+  e.confidence,
+  jsonb_build_object('event_id', e.id, 'display_date', e.display_date)
+from public.property_events e
+where e.org_id = '00000000-0000-4000-8000-000000000001'
+on conflict (property_id, memory_key) do update set
+  title = excluded.title,
+  content = excluded.content,
+  valid_at = excluded.valid_at,
+  confidence = excluded.confidence,
+  evidence = excluded.evidence;
+
+insert into public.property_memory_items (
+  org_id, property_id, source_id, memory_key, memory_type, title,
+  content, valid_at, confidence, evidence
+)
+select
+  o.org_id,
+  o.property_id,
+  o.source_id,
+  'observation:' || o.observation_key,
+  'observation',
+  o.label,
+  concat_ws(' ', o.observation_type, o.label, o.payload::text),
+  o.observed_at,
+  o.confidence,
+  jsonb_build_object('observation_id', o.id, 'payload', o.payload)
+from public.observations o
+where o.org_id = '00000000-0000-4000-8000-000000000001'
+on conflict (property_id, memory_key) do update set
+  title = excluded.title,
+  content = excluded.content,
+  valid_at = excluded.valid_at,
+  confidence = excluded.confidence,
+  evidence = excluded.evidence;
