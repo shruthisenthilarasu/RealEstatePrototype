@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="SiteLedger CRE property intelligence prototype for continuous site, zoning, and market memory."
+    />
+    <title>SiteLedger CRE</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIINfQ3ynhxc9WgqSrKhmZp8QF/4ZMQM/Q="
+      crossorigin=""
+    />
+    <script type="module" crossorigin src="./assets/index-BNh0GWr_.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CbSqzHuA.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>
+            <div class="brand">SiteLedger <em>CRE</em></div>
+            <div class="brand-sub">PROPERTY INTELLIGENCE SYSTEM</div>
+          </div>
+        </div>
+        <form id="searchForm" class="search" role="search">
+          <label class="sr-only" for="query">Search parcel memory</label>
+          <input
+            id="query"
+            type="search"
+            placeholder="Find former QSR pads with drive-throughs, strong traffic and reuse potential"
+          />
+          <button type="submit">Search portfolio</button>
+        </form>
+        <div class="live-chip"><span></span> 8 parcels monitored</div>
+      </header>
+
+      <section class="workspace">
+        <aside class="rail" aria-label="Map controls">
+          <section>
+            <p class="section-label">VIEW</p>
+            <div class="segmented" role="group" aria-label="Parcel state view">
+              <button
+                class="view-button active"
+                data-view="observed"
+                type="button"
+              >
+                Observed
+              </button>
+              <button class="view-button" data-view="legal" type="button">
+                Legal
+              </button>
+              <button class="view-button" data-view="recorded" type="button">
+                Recorded
+              </button>
+            </div>
+          </section>
+
+          <section>
+            <p class="section-label">ARCHIVE SEARCHES</p>
+            <div class="scenario-list">
+              <button type="button" data-query="drive reuse">
+                Drive-through reuse <span>5</span>
+              </button>
+              <button type="button" data-query="ground lease pad">
+                Ground-lease pads <span>3</span>
+              </button>
+              <button type="button" data-query="traffic">
+                Traffic-backed sites <span>7</span>
+              </button>
+              <button type="button" data-query="C-3 zoning">
+                Zoning stated <span>2</span>
+              </button>
+            </div>
+          </section>
+
+          <section>
+            <p class="section-label">PROPERTY SIGNALS</p>
+            <label class="check"
+              ><input type="checkbox" checked data-layer="drive" />
+              Drive-through form</label
+            >
+            <label class="check"
+              ><input type="checkbox" checked data-layer="reuse" /> Reuse
+              potential</label
+            >
+            <label class="check"
+              ><input type="checkbox" checked data-layer="traffic" /> Traffic
+              and visibility</label
+            >
+            <label class="check"
+              ><input type="checkbox" checked data-layer="zoning" /> Zoning
+              evidence</label
+            >
+          </section>
+
+          <section class="model-status">
+            <div><span>ARCHIVE INGEST</span><strong>2025.zip</strong></div>
+            <div><span>SOURCE FILES</span><strong>250</strong></div>
+            <div><span>ACTIVE SITES</span><strong>8</strong></div>
+          </section>
+        </aside>
+
+        <section class="map-stage" aria-label="Parcel memory map">
+          <div id="map"></div>
+          <div class="map-heading">
+            <span id="resultCount">8 parcels in view</span>
+            <strong id="viewLabel">Observed physical state</strong>
+          </div>
+          <div id="queryResult" class="query-result" aria-live="polite">
+            Showing eight sites extracted from the supplied archive
+          </div>
+          <div class="legend" aria-label="Map legend">
+            <span><i class="swatch opportunity"></i> Reuse opportunity</span>
+            <span><i class="swatch changed"></i> Marketed site</span>
+            <span><i class="swatch construction"></i> Development plan</span>
+            <span><i class="swatch stable"></i> Operating</span>
+          </div>
+          <div class="time-control">
+            <div>
+              <span class="section-label">LEDGER DATE</span>
+              <strong id="dateLabel">NOV 2026</strong>
+            </div>
+            <input
+              id="timeSlider"
+              type="range"
+              min="0"
+              max="6"
+              value="6"
+              step="1"
+              aria-label="Parcel memory date"
+            />
+            <button id="playButton" type="button" aria-pressed="false">
+              Play history
+            </button>
+          </div>
+        </section>
+
+        <aside class="detail" aria-label="Selected parcel details">
+          <div class="detail-topline">
+            <span id="parcelId">ARCHIVE-2026-QSR-01</span>
+            <span id="confidence" class="confidence">92% confidence</span>
+          </div>
+          <h1 id="parcelName">1604 / Bandera restaurant</h1>
+          <p id="parcelAddress" class="address">11707 TX-1604 Loop, Helotes</p>
+
+          <div class="state-summary">
+            <div>
+              <span>SITE FORM</span
+              ><strong id="observedState"
+                >Freestanding restaurant with drive-through</strong
+              >
+            </div>
+            <div>
+              <span>ZONING</span
+              ><strong id="legalState">C-3 stated in source flyer</strong>
+            </div>
+            <div>
+              <span>ARCHIVE</span
+              ><strong id="recordedState">For-sale flyer, 2026 folder</strong>
+            </div>
+          </div>
+
+          <section class="signal-block">
+            <div class="section-heading">
+              <span>Extracted property evidence</span
+              ><span id="imageDate">Source: archive PDF</span>
+            </div>
+            <div id="detections" class="detection-list"></div>
+          </section>
+
+          <section class="memory-block">
+            <div class="section-heading">
+              <span>Property ledger</span
+              ><button id="similarButton" type="button">Find similar</button>
+            </div>
+            <ol id="timeline" class="timeline"></ol>
+          </section>
+
+          <section id="similarityPanel" class="similarity-panel" hidden>
+            <div class="section-heading">
+              <span>Visual similarity</span><span>Form Signature v3</span>
+            </div>
+            <div id="similarityList"></div>
+          </section>
+
+          <div class="prototype-note">
+            Archive facts are extracted from supplied marketing and site-plan
+            files. The map, scoring and future public-data signals are
+            conceptual. All results require source and professional
+            verification.
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+  </body>
+</html>
