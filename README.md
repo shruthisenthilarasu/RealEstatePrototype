@@ -2,6 +2,10 @@
 
 SiteLedger CRE is a browser-based commercial real-estate prototype for searching a property's legal, recorded, observed, and market history. The initial dataset is derived from the supplied San Antonio property archive.
 
+> **Prototype and attribution notice**
+>
+> This prototype is being developed by **Shruthi Senthilarasu**, acting as a contracted software engineer, for **Tanner of Octave Commercial Real Estate Partners**. Shruthi Senthilarasu does not claim ownership of this project. It is prototype software under active development and is not a production system or a substitute for professional legal, zoning, surveying, engineering, or real-estate advice.
+
 The browser can run from a bundled offline dataset or connect to a Supabase spatial ledger. This keeps the prototype deployable on GitHub Pages while PostGIS, provenance, and multi-tenant access controls evolve independently.
 
 ## Tooling
