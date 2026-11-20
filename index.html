@@ -95,6 +95,21 @@
             >
           </section>
 
+          <section>
+            <p class="section-label">MAP SOURCES</p>
+            <label class="check"
+              ><input id="satelliteLayerToggle" type="checkbox" checked />
+              Satellite imagery</label
+            >
+            <label class="check"
+              ><input id="parcelLayerToggle" type="checkbox" checked /> BCAD
+              parcel trace</label
+            >
+            <p class="layer-note">
+              Parcel polygons load below neighborhood scale.
+            </p>
+          </section>
+
           <section class="model-status">
             <div><span>ARCHIVE INGEST</span><strong>2025.zip</strong></div>
             <div><span>SOURCE FILES</span><strong>250</strong></div>
@@ -103,6 +118,10 @@
             </div>
             <div>
               <span>ACTIVE SITES</span><strong id="activeSiteCount">—</strong>
+            </div>
+            <div>
+              <span>PARCEL FEED</span
+              ><strong id="parcelFeedStatus">ready</strong>
             </div>
           </section>
         </aside>
@@ -167,6 +186,16 @@
             </div>
           </div>
 
+          <section class="parcel-block">
+            <div class="section-heading">
+              <span>Official parcel context</span
+              ><span id="parcelSourceDate">Bexar County GIS / BCAD</span>
+            </div>
+            <div id="parcelFacts" class="parcel-facts">
+              <div><span>Parcel match</span><strong>Loading…</strong></div>
+            </div>
+          </section>
+
           <section class="signal-block">
             <div class="section-heading">
               <span>Extracted property evidence</span
@@ -192,9 +221,9 @@
 
           <div class="prototype-note">
             Archive facts are extracted from supplied marketing and site-plan
-            files. The map, scoring and future public-data signals are
-            conceptual. All results require source and professional
-            verification.
+            files. Satellite imagery and parcel records are external context
+            layers with separate source dates. SiteLedger’s scores and inferred
+            changes require source and professional verification.
           </div>
         </aside>
       </section>

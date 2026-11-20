@@ -16,10 +16,10 @@ describe("local property repository", () => {
 
   it("applies geographic bounds", async () => {
     const properties = await repository.listPropertiesInBounds({
-      west: -98.7,
-      south: 29.56,
-      east: -98.67,
-      north: 29.58,
+      west: -98.68,
+      south: 29.54,
+      east: -98.66,
+      north: 29.56,
     });
     expect(properties.map((property) => property.id)).toEqual([
       "ARCHIVE-2026-QSR-01",

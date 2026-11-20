@@ -26,6 +26,43 @@ on conflict (org_id, source_key) do update set
   title = excluded.title,
   metadata = excluded.metadata;
 
+insert into public.external_data_providers (
+  id, org_id, provider_key, label, endpoint, layer_type, source_date,
+  last_verified_at, attribution, metadata
+)
+values
+  (
+    '00000000-0000-4000-8000-000000000211',
+    '00000000-0000-4000-8000-000000000001',
+    'bexar-parcels',
+    'Bexar County GIS parcel snapshot',
+    'https://maps.bexar.org/arcgis/rest/services/Parcels/MapServer/0/query',
+    'arcgis-feature-query',
+    '2021-10-01',
+    '2026-11-19T00:00:00Z',
+    'Bexar County GIS / Bexar County Appraisal District',
+    '{"fields":["PropID","Situs","TotVal","YrBlt","Acres","PropUse"],"warning":"County service metadata reports an older annual snapshot."}'
+  ),
+  (
+    '00000000-0000-4000-8000-000000000212',
+    '00000000-0000-4000-8000-000000000001',
+    'esri-world-imagery',
+    'Esri World Imagery',
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    'raster-tiles',
+    null,
+    '2026-11-19T00:00:00Z',
+    'Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+    '{"coordinate_system":"Web Mercator","role":"visual context only"}'
+  )
+on conflict (org_id, provider_key) do update set
+  label = excluded.label,
+  endpoint = excluded.endpoint,
+  source_date = excluded.source_date,
+  last_verified_at = excluded.last_verified_at,
+  attribution = excluded.attribution,
+  metadata = excluded.metadata;
+
 insert into public.properties (
   id, org_id, reference_code, name, address, city, state, status,
   observed_state, legal_state, recorded_state, zoning_code, confidence,
@@ -38,8 +75,8 @@ values
     'Helotes', 'TX', 'opportunity', 'Freestanding restaurant with drive-through',
     'C-3 stated in source flyer', 'For-sale flyer in 2026/QSR', 'C-3', 0.98,
     array['drive','reuse','traffic','zoning'],
-    extensions.st_setsrid(extensions.st_makepoint(-98.6900, 29.5710), 4326)::extensions.geography,
-    'Source: 2026 archive PDF', '{"building_sf":4465,"land_acres":1.21,"traffic_vpd":142543}'
+    extensions.st_setsrid(extensions.st_makepoint(-98.669472, 29.553007), 4326)::extensions.geography,
+    'Source: 2026 archive PDF', '{"building_sf":4465,"land_acres":1.21,"traffic_vpd":142543,"bcad_property_id":583796}'
   ),
   (
     '00000000-0000-4000-8000-000000000102', '00000000-0000-4000-8000-000000000001',
@@ -47,8 +84,8 @@ values
     'San Antonio', 'TX', 'opportunity', 'Former Sonic pad marketed for ground lease',
     'Zoning not stated in archive source', 'Ground-lease flyer in 2025 folder', null, 0.97,
     array['drive','reuse','traffic'],
-    extensions.st_setsrid(extensions.st_makepoint(-98.6122, 29.4605), 4326)::extensions.geography,
-    'Source: 2025 archive PDF', '{"land_acres":0.592,"traffic_vpd":{"ingram":19946,"callaghan":13945}}'
+    extensions.st_setsrid(extensions.st_makepoint(-98.604856, 29.466807), 4326)::extensions.geography,
+    'Source: 2025 archive PDF', '{"land_acres":0.592,"traffic_vpd":{"ingram":19946,"callaghan":13945},"bcad_property_id":526136}'
   ),
   (
     '00000000-0000-4000-8000-000000000103', '00000000-0000-4000-8000-000000000001',
@@ -56,8 +93,8 @@ values
     'Leon Valley', 'TX', 'opportunity', 'Former Sonic pad adjacent to Bill Miller',
     'Zoning not stated in archive source', 'Ground-lease flyer in 2025 folder', null, 0.97,
     array['drive','reuse','traffic'],
-    extensions.st_setsrid(extensions.st_makepoint(-98.5961, 29.5039), 4326)::extensions.geography,
-    'Source: 2025 archive PDF', '{"land_acres":0.83,"traffic_vpd":{"loop_410":220688,"bandera":83734}}'
+    extensions.st_setsrid(extensions.st_makepoint(-98.603424, 29.484740), 4326)::extensions.geography,
+    'Source: 2025 archive PDF', '{"land_acres":0.83,"traffic_vpd":{"loop_410":220688,"bandera":83734},"bcad_property_id":217769}'
   ),
   (
     '00000000-0000-4000-8000-000000000104', '00000000-0000-4000-8000-000000000001',
@@ -65,8 +102,8 @@ values
     'Windcrest', 'TX', 'stable', '2nd-generation QSR; tenant operating',
     'Zoning not stated in archive source', 'Lease flyer in 2026/QSR', null, 0.98,
     array['drive','reuse','traffic'],
-    extensions.st_setsrid(extensions.st_makepoint(-98.3908, 29.5095), 4326)::extensions.geography,
-    'Source: 2026 archive PDF', '{"building_sf":2834,"traffic_vpd":34246}'
+    extensions.st_setsrid(extensions.st_makepoint(-98.391379, 29.509916), 4326)::extensions.geography,
+    'Source: 2026 archive PDF', '{"building_sf":2834,"traffic_vpd":34246,"bcad_property_id":502189}'
   ),
   (
     '00000000-0000-4000-8000-000000000105', '00000000-0000-4000-8000-000000000001',
@@ -74,8 +111,8 @@ values
     'San Antonio', 'TX', 'changed', '0.25–0.5 acre outparcel anchored by Gold’s Gym',
     'Zoning not stated in archive source', 'Ground-lease flyer in 2026/Land', null, 0.97,
     array['reuse','traffic'],
-    extensions.st_setsrid(extensions.st_makepoint(-98.5710, 29.4930), 4326)::extensions.geography,
-    'Source: 2026 archive PDF', '{"land_acres_min":0.25,"land_acres_max":0.5,"traffic_vpd":{"loop_410":166684,"babcock":44683}}'
+    extensions.st_setsrid(extensions.st_makepoint(-98.570704, 29.492241), 4326)::extensions.geography,
+    'Source: 2026 archive PDF', '{"land_acres_min":0.25,"land_acres_max":0.5,"traffic_vpd":{"loop_410":166684,"babcock":44683},"bcad_property_id":538378}'
   ),
   (
     '00000000-0000-4000-8000-000000000106', '00000000-0000-4000-8000-000000000001',
@@ -83,8 +120,8 @@ values
     'San Antonio', 'TX', 'changed', 'High-profile retail redevelopment by the Pearl',
     'Zoning not stated in archive source', 'Redevelopment flyer in 2025 folder', null, 0.98,
     array['reuse','traffic'],
-    extensions.st_setsrid(extensions.st_makepoint(-98.4760, 29.4455), 4326)::extensions.geography,
-    'Source: 2025 archive PDF', '{"building_sf":10564,"traffic_vpd":{"broadway":21702,"josephine":4000}}'
+    extensions.st_setsrid(extensions.st_makepoint(-98.475694, 29.444643), 4326)::extensions.geography,
+    'Source: 2025 archive PDF', '{"building_sf":10564,"traffic_vpd":{"broadway":21702,"josephine":4000},"bcad_property_id":120258}'
   ),
   (
     '00000000-0000-4000-8000-000000000107', '00000000-0000-4000-8000-000000000001',

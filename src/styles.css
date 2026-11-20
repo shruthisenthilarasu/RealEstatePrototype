@@ -243,6 +243,12 @@ button {
   width: 16px;
   height: 16px;
 }
+.layer-note {
+  margin: 7px 2px 0;
+  color: #6f878d;
+  font-size: 12px;
+  line-height: 1.45;
+}
 .model-status {
   border-top: 1px solid var(--line);
   padding-top: 18px;
@@ -272,24 +278,61 @@ button {
   inset: 0;
   background: #0b161c;
 }
-.leaflet-container {
+.maplibregl-map {
   font-family: inherit;
   background: #0b161c;
 }
-.leaflet-image-layer {
-  filter: saturate(0.72) brightness(0.55) contrast(1.25);
+.maplibregl-ctrl-bottom-right {
+  bottom: 86px;
+  right: 8px;
 }
-.leaflet-control-zoom a {
+.maplibregl-ctrl-group {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: none;
+}
+.maplibregl-ctrl-group button {
   background: #10212b !important;
-  color: var(--text) !important;
-  border-color: var(--line) !important;
+  border-color: var(--line);
 }
-.leaflet-control-attribution {
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--line);
+}
+.maplibregl-ctrl-group button span {
+  filter: invert(1);
+}
+.maplibregl-ctrl-attrib {
   background: rgba(7, 16, 24, 0.78) !important;
   color: #789097 !important;
 }
-.leaflet-control-attribution a {
+.maplibregl-ctrl-attrib a {
   color: #8eb3bd !important;
+}
+.maplibregl-popup-content {
+  background: #0b1720;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.38);
+  padding: 12px;
+}
+.maplibregl-popup-tip {
+  border-top-color: #0b1720 !important;
+  border-bottom-color: #0b1720 !important;
+}
+.parcel-popup {
+  display: grid;
+  gap: 8px;
+  min-width: 210px;
+}
+.parcel-popup div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+.parcel-popup span {
+  color: var(--muted);
 }
 .map-heading {
   position: absolute;
@@ -447,6 +490,7 @@ button {
 }
 .signal-block,
 .memory-block,
+.parcel-block,
 .similarity-panel {
   margin-top: 24px;
 }
@@ -474,6 +518,34 @@ button {
 .detection-list {
   display: grid;
   gap: 7px;
+}
+.parcel-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--line);
+}
+.parcel-facts div {
+  min-width: 0;
+  padding: 10px 11px;
+  background: #0d1c25;
+  display: grid;
+  gap: 4px;
+}
+.parcel-facts span {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.parcel-facts strong {
+  overflow-wrap: anywhere;
+  color: #c5d5d6;
+  font-size: 13px;
+  font-weight: 600;
 }
 .detection {
   display: grid;
@@ -571,9 +643,14 @@ button {
     gap: 12px;
   }
   .workspace {
-    display: block;
+    display: flex;
+    flex-direction: column;
+  }
+  .map-stage {
+    order: 1;
   }
   .rail {
+    order: 2;
     border-right: 0;
     border-bottom: 1px solid var(--line);
     display: grid;
@@ -590,6 +667,7 @@ button {
     min-height: 640px;
   }
   .detail {
+    order: 3;
     border-left: 0;
     border-top: 1px solid var(--line);
   }
